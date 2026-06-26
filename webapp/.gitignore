@@ -1,0 +1,11 @@
+.next/
+node_modules/
+.env*
+!.env*.example
+*.log
+tsconfig.tsbuildinfo
+
+*firebase-adminsdk*.json
+serviceAccountKey.json
+firebase-service-account.json
+*.pem

@@ -1,0 +1,12 @@
+{
+  "name": "ai-handover-challenge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "웰컴데이 챌린지 데이터셋 운영 스크립트",
+  "scripts": {
+    "convert": "node scripts/convert_csv_to_xlsx.js"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

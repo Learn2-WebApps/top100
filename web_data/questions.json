@@ -1,0 +1,102 @@
+{
+  "challenge": {
+    "title": "김하늘 매니저의 빈 자리를 채워라",
+    "subtitle": "웰컴데이 운영 점검표 완성 미션",
+    "description": "운영지원팀에 새로 배치된 신입사원입니다. 갑자기 자리를 비운 전임자(김하늘 매니저)의 워크스페이스 자료를 검토하여 웰컴데이 운영 점검표를 완성하세요.",
+    "company": "(주)넥스트웨이브 코리아",
+    "event": "2025 하반기 신규입사자 웰컴데이",
+    "event_date": "2025-07-25",
+    "total_score": 100,
+    "time_limit_minutes": 45,
+    "workspace_zip": "welcome_day_workspace.zip"
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "type": "single_choice",
+      "order": 1,
+      "title": "최종 확정 행사 장소",
+      "question": "김하늘 매니저가 남긴 자료를 검토한 결과, 2025 하반기 신규입사자 웰컴데이의 최종 확정 행사 장소는 어디입니까?",
+      "note": "주의: 초기 기획 단계의 장소와 최종 확정 장소가 다를 수 있습니다.",
+      "score": 20,
+      "options": [
+        { "id": "A", "label": "본사 대강당 A홀" },
+        { "id": "B", "label": "5층 그랜드홀 B룸" },
+        { "id": "C", "label": "외부 호텔 컨퍼런스룸" },
+        { "id": "D", "label": "교육센터 3층 세미나실" }
+      ]
+    },
+    {
+      "id": "Q2",
+      "type": "number_input",
+      "order": 2,
+      "title": "최종 참석 확정 인원",
+      "question": "여러 버전의 참석자 명단이 존재합니다. 7월 18일 기준으로 참석 확정된 인원은 총 몇 명입니까?",
+      "note": "주의: HR 전체 입사자 수, 취소 전 명단, 잠정 집계 등 여러 수치가 혼재합니다.",
+      "score": 20,
+      "input_type": "integer",
+      "unit": "명",
+      "placeholder": "숫자만 입력"
+    },
+    {
+      "id": "Q3",
+      "type": "multiple_choice",
+      "order": 3,
+      "title": "운영 점검표 미확정 항목",
+      "question": "가장 최신 운영 체크리스트를 기준으로, 현재 미확정(△) 상태인 항목을 모두 고르시오.",
+      "note": "주의: 여러 버전의 체크리스트가 있으며, 버전마다 미확정 항목이 다릅니다. 가장 최신 버전 기준으로 판단하세요.",
+      "score": 20,
+      "select_count": 3,
+      "scoring": "partial_with_penalty",
+      "options": [
+        { "id": "A", "label": "행사 장소 최종 확정 및 계약 완료" },
+        { "id": "B", "label": "외부 강사 참석 여부 최종 확인" },
+        { "id": "C", "label": "케이터링 메뉴 최종 확정" },
+        { "id": "D", "label": "주차 안내 배너 제작 완료" },
+        { "id": "E", "label": "웰컴 키트 수령 및 수량 확인" },
+        { "id": "F", "label": "참석자 이름표 출력 완료" }
+      ]
+    },
+    {
+      "id": "Q4",
+      "type": "matching",
+      "order": 4,
+      "title": "세션별 최종 담당자 매칭",
+      "question": "7월 18일 담당자 변경 공지 이후 확정된 세션별 최종 담당자를 올바르게 연결하시오.",
+      "note": "주의: 초기 배정과 최종 배정이 다를 수 있습니다.",
+      "score": 20,
+      "scoring": "partial_per_pair",
+      "left_items": [
+        { "id": "S1", "label": "오프닝 세션" },
+        { "id": "S2", "label": "회사 소개 및 비전" },
+        { "id": "S3", "label": "조직 문화 워크숍" },
+        { "id": "S4", "label": "Q&A 및 네트워킹" }
+      ],
+      "right_items": [
+        { "id": "P1", "label": "박준혁 팀장" },
+        { "id": "P2", "label": "이소연 대리" },
+        { "id": "P3", "label": "최민호 과장" },
+        { "id": "P4", "label": "정다은 대리" }
+      ]
+    },
+    {
+      "id": "Q5",
+      "type": "file_selection",
+      "order": 5,
+      "title": "외부 강사 미확정 근거 파일",
+      "question": "외부 강사의 참석 여부가 아직 확정되지 않았음을 직접 확인할 수 있는 파일을 모두 고르시오.",
+      "note": "이 사실을 가장 명확하게 증명하는 파일 3개를 선택하세요.",
+      "score": 20,
+      "select_count": 3,
+      "scoring": "partial_with_penalty",
+      "options": [
+        { "id": "A", "label": "1_메일/외부강사_확인요청_0714.txt" },
+        { "id": "B", "label": "5_첨부자료/강사프로필_모음.md" },
+        { "id": "C", "label": "1_메일/김하늘_받은메일함_0715.txt" },
+        { "id": "D", "label": "2_캘린더/프로그램_확정_0716.xlsx" },
+        { "id": "E", "label": "5_첨부자료/운영체크리스트_0720.md" },
+        { "id": "F", "label": "1_메일/케이터링업체_회신_0717.txt" }
+      ]
+    }
+  ]
+}
