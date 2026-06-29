@@ -451,7 +451,7 @@ export default function ChallengeForm({
           </div>
         </section>
 
-        {/* Scoring & Deadline */}
+        {/* Scoring & Event Date */}
         <section className="section">
           <h2 className="section-title">📊 문제 구성 및 배점</h2>
           <p style={{ fontSize: "14px", color: "#64748B", marginBottom: "16px", lineHeight: 1.7 }}>
@@ -470,7 +470,7 @@ export default function ChallengeForm({
             border: "1px solid rgba(37,99,235,0.15)",
             borderRadius: "10px",
           }}>
-            <span style={{ fontSize: "13px", color: "#2563EB", fontWeight: 600 }}>제출 기한</span>
+            <span style={{ fontSize: "13px", color: "#2563EB", fontWeight: 600 }}>웰컴데이 행사일</span>
             <span style={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>2026년 7월 31일</span>
           </div>
         </section>
