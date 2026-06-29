@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function unauthorized() {
-  return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
+  return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
 }
 
 function tsToIso(val: unknown): string | null {
@@ -17,7 +17,7 @@ function tsToIso(val: unknown): string | null {
   return null;
 }
 
-// GET /api/admin/codes/[code]/results — code doc + submissions
+// GET /api/admin/codes/[code]/results — code doc + submissions (sessionId-scoped)
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ code: string }> }
@@ -27,43 +27,61 @@ export async function GET(
     const { code } = await params;
     const db = getAdminDb();
 
-    const [codeSnap, subSnap] = await Promise.all([
-      db.collection("accessCodes").doc(code).get(),
-      db.collection("submissions")
-        .where("code", "==", code)
-        .orderBy("submittedAt", "asc")
-        .get(),
-    ]);
+    const codeSnap = await db.collection("accessCodes").doc(code).get();
 
-    if (!codeSnap.exists) {
-      return NextResponse.json({ error: "코드를 찾을 수 없습니다." }, { status: 404 });
+    if (!codeSnap.exists || codeSnap.data()?.deleted === true) {
+      return NextResponse.json(
+        { ok: false, error: "NOT_FOUND", message: "코드를 찾을 수 없습니다." },
+        { status: 404 }
+      );
     }
 
-    const codeData = codeSnap.data()!;
+    const codeData  = codeSnap.data()!;
+    const sessionId = codeData.sessionId as string | undefined;
+
+    // Query submissions scoped to the current sessionId.
+    // Fall back to code-only query for legacy docs without sessionId.
+    const subQuery = sessionId
+      ? db.collection("submissions").where("sessionId", "==", sessionId)
+      : db.collection("submissions").where("code", "==", code);
+
+    const subSnap = await subQuery.get();
+
     const codeDoc = {
-      code:   codeData.code   as string,
-      title:  codeData.title  as string,
-      active: codeData.active as boolean,
+      code:      codeData.code   as string,
+      sessionId: sessionId       ?? null,
+      title:     codeData.title  as string,
+      active:    codeData.active as boolean,
     };
 
-    const submissions = subSnap.docs.map(d => {
-      const data = d.data();
-      return {
-        id:              d.id,
-        name:            data.name            as string,
-        department:      data.department      as string ?? "",
-        totalScore:      data.totalScore      as number,
-        maxScore:        data.maxScore        as number,
-        percentage:      data.percentage      as number,
-        questionResults: data.questionResults as unknown[],
-        submittedAt:     tsToIso(data.submittedAt),
-        code:            data.code            as string,
-      };
-    });
+    const submissions = subSnap.docs
+      .map(d => {
+        const data = d.data();
+        return {
+          id:              d.id,
+          name:            data.name            as string,
+          department:      (data.department     as string) ?? "",
+          totalScore:      data.totalScore      as number,
+          maxScore:        data.maxScore        as number,
+          percentage:      data.percentage      as number,
+          questionResults: data.questionResults as unknown[],
+          submittedAt:     tsToIso(data.submittedAt),
+          code:            data.code            as string,
+          sessionId:       (data.sessionId      as string) ?? null,
+        };
+      })
+      .sort((a, b) => {
+        const at = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+        const bt = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+        return at - bt;
+      });
 
     return NextResponse.json({ codeDoc, submissions });
   } catch (err) {
     console.error("[GET /api/admin/codes/[code]/results]", err);
-    return NextResponse.json({ error: "서버 오류가 발생했습니다." }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "SERVER_ERROR", message: "서버 오류가 발생했습니다." },
+      { status: 500 }
+    );
   }
 }

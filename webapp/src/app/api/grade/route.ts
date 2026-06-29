@@ -3,36 +3,36 @@ import path from "path";
 import fs from "fs";
 import { getAdminDb } from "@/lib/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
+import type { GradeRequest, GradeResponse, QuestionResult } from "@/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-import type { GradeRequest, GradeResponse, QuestionResult } from "@/types";
 
 interface AnswerEntry {
-  type: string;
-  answer: string | number | string[] | Record<string, string>;
-  score: number;
-  grading: string;
-  feedback_correct: string;
+  type:               string;
+  answer:             string | number | string[] | Record<string, string>;
+  score:              number;
+  grading:            string;
+  feedback_correct:   string;
   feedback_incorrect: string;
   score_per_correct?: number;
   penalty_per_wrong?: number;
-  min_score?: number;
-  score_per_pair?: number;
-  tolerance?: number;
+  min_score?:         number;
+  score_per_pair?:    number;
+  tolerance?:         number;
 }
 
-interface AnswerKey  { answers: Record<string, AnswerEntry>; }
-interface QData      { challenge: { total_score: number }; questions: { id: string; title: string }[]; }
+interface AnswerKey { answers: Record<string, AnswerEntry>; }
+interface QData     { challenge: { total_score: number }; questions: { id: string; title: string }[]; }
 
 function loadJson<T>(relPath: string): T {
   return JSON.parse(fs.readFileSync(path.join(process.cwd(), "..", relPath), "utf-8")) as T;
 }
 
 function gradeQuestion(
-  qId: string,
-  entry: AnswerEntry,
-  title: string,
+  qId:       string,
+  entry:     AnswerEntry,
+  title:     string,
   submitted: string | string[] | Record<string, string> | undefined
 ): QuestionResult {
   const maxScore = entry.score;
@@ -57,13 +57,12 @@ function gradeQuestion(
     case "partial_with_penalty": {
       const correctArr = entry.answer as string[];
       const correctSet = new Set(correctArr);
-      const subArr     = submitted as string[];
+      const subArr     = submitted  as string[];
       const subSet     = new Set(subArr);
       const perRight   = entry.score_per_correct ?? 1;
       const perWrong   = entry.penalty_per_wrong  ?? 1;
       const minScore   = entry.min_score ?? 0;
 
-      // Exact match → full marks
       if (correctArr.length === subArr.length && correctArr.every(a => subSet.has(a))) {
         earned = maxScore;
         break;
@@ -72,7 +71,7 @@ function gradeQuestion(
       let raw = 0;
       for (const sel of subArr) {
         if (correctSet.has(sel)) raw += perRight;
-        else raw -= perWrong;
+        else                     raw -= perWrong;
       }
       earned = Math.max(minScore, Math.min(raw, maxScore - 1));
       break;
@@ -80,7 +79,7 @@ function gradeQuestion(
 
     case "partial_per_pair": {
       const correctMap = entry.answer as Record<string, string>;
-      const subMap     = submitted as Record<string, string>;
+      const subMap     = submitted   as Record<string, string>;
       const perPair    = entry.score_per_pair ?? 1;
       let pairs = 0;
       for (const [k, v] of Object.entries(correctMap)) {
@@ -95,8 +94,10 @@ function gradeQuestion(
   }
 
   const isCorrect = earned >= maxScore;
-  return { questionId: qId, title, score: earned, maxScore, correct: isCorrect,
-    feedback: isCorrect ? entry.feedback_correct : entry.feedback_incorrect };
+  return {
+    questionId: qId, title, score: earned, maxScore, correct: isCorrect,
+    feedback: isCorrect ? entry.feedback_correct : entry.feedback_incorrect,
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -123,22 +124,32 @@ export async function POST(req: NextRequest) {
     const percentage  = maxTotal > 0 ? Math.round((totalScore / maxTotal) * 100) : 0;
     const submittedAt = new Date().toISOString();
 
-    // ── Firestore save (best-effort, won't fail the response if unavailable) ──
+    // ── Firestore save (best-effort) ──────────────────────────────────────────
     if (participantId) {
       try {
         const db = getAdminDb();
 
+        // Read participant to get sessionId (set during /api/enter)
+        let sessionId: string | null = null;
+        try {
+          const partDoc = await db.collection("participants").doc(participantId).get();
+          sessionId = (partDoc.data()?.sessionId as string) ?? null;
+        } catch {
+          // sessionId stays null — submission still saved without it
+        }
+
         await db.collection("submissions").add({
           participantId,
           code,
+          sessionId,
           name,
           department,
           answers,
           totalScore,
-          maxScore: maxTotal,
+          maxScore:        maxTotal,
           percentage,
           questionResults: results,
-          submittedAt: FieldValue.serverTimestamp(),
+          submittedAt:     FieldValue.serverTimestamp(),
         });
 
         await db.collection("participants").doc(participantId).update({
@@ -147,7 +158,6 @@ export async function POST(req: NextRequest) {
           status:          "submitted",
         });
       } catch (fsErr) {
-        // Log but don't fail — grading result is still returned to client
         console.warn("[/api/grade] Firestore save failed:", fsErr);
       }
     }

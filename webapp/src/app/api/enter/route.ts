@@ -6,9 +6,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 interface EnterRequest {
-  name: string;
+  name:       string;
   department: string;
-  code: string;
+  code:       string;
 }
 
 export async function POST(req: NextRequest) {
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       db = getAdminDb();
     } catch {
       return NextResponse.json(
-        { error: "서버 설정이 완료되지 않았습니다. Firebase 환경변수를 확인하세요." },
+        { error: "서버 설정이 완료되지 않았습니다." },
         { status: 500 }
       );
     }
@@ -39,24 +39,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "존재하지 않는 입장코드입니다." }, { status: 403 });
     }
 
-    const codeData = codeSnap.data()!;
+    const codeData  = codeSnap.data()!;
+    const sessionId = codeData.sessionId as string | undefined;
 
+    // Reject deleted or inactive codes
+    if (codeData.deleted === true) {
+      return NextResponse.json({ error: "존재하지 않는 입장코드입니다." }, { status: 403 });
+    }
     if (!codeData.active) {
       return NextResponse.json({ error: "비활성화된 입장코드입니다." }, { status: 403 });
     }
-
     if (codeData.expiresAt && (codeData.expiresAt.toDate() as Date) < new Date()) {
       return NextResponse.json({ error: "만료된 입장코드입니다." }, { status: 403 });
     }
 
     const ref = await db.collection("participants").add({
-      name:             name.trim(),
-      department:       (department ?? "").trim(),
+      name:            name.trim(),
+      department:      (department ?? "").trim(),
       code,
-      enteredAt:        FieldValue.serverTimestamp(),
-      status:           "entered",
-      finalScore:       null,
-      lastSubmittedAt:  null,
+      sessionId:       sessionId ?? null,
+      enteredAt:       FieldValue.serverTimestamp(),
+      status:          "entered",
+      finalScore:      null,
+      lastSubmittedAt: null,
     });
 
     return NextResponse.json({
@@ -64,6 +69,7 @@ export async function POST(req: NextRequest) {
       name:          name.trim(),
       department:    (department ?? "").trim(),
       code,
+      sessionId:     sessionId ?? null,
     });
   } catch (err) {
     console.error("[/api/enter]", err);

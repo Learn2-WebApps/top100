@@ -8,6 +8,7 @@ import Link from "next/link";
 
 interface AccessCode {
   code:             string;
+  sessionId:        string | null;
   title:            string;
   active:           boolean;
   createdAt:        string | null;
@@ -92,8 +93,8 @@ function CreateModal({
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ code, title: title.trim() }),
       });
-      const data = (await res.json()) as { error?: string };
-      if (!res.ok) { setError(data.error ?? "생성에 실패했습니다."); return; }
+      const data = (await res.json()) as { ok?: boolean; error?: string; message?: string };
+      if (!res.ok) { setError(data.message ?? data.error ?? "생성에 실패했습니다."); return; }
       setSuccess(true);
       onCreated();
       setTimeout(onClose, 800);
