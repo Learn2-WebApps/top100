@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "웰컴데이 AI 활용 챌린지",
-  description: "신입사원 AI 활용 미니 챌린지 — 전임자의 워크스페이스를 복구하라",
+  title: "AI TOP100 업무 역량 진단",
+  description: "AI를 활용한 실전 업무 역량을 점검하는 평가입니다.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -3,85 +3,32 @@
 import { useState } from "react";
 import type { QuestionsData, Question, Answers, GradeResponse, Participant } from "@/types";
 
-// ── Progress Steps ────────────────────────────────────────────────────────────
-
-const STEPS = ["입장", "자료 다운로드", "AI 분석", "답안 제출", "결과 확인"];
-
-function ProgressBar({ step }: { step: number }) {
-  return (
-    <div style={{
-      background: "var(--color-canvas)",
-      borderBottom: "1px solid var(--color-hairline)",
-      padding: "14px 24px",
-      overflowX: "auto",
-    }}>
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        maxWidth: "860px",
-        margin: "0 auto",
-        minWidth: "fit-content",
-      }}>
-        {STEPS.map((label, i) => {
-          const num    = i + 1;
-          const done   = num < step;
-          const active = num === step;
-          return (
-            <div key={i} style={{ display: "flex", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-                <div style={{
-                  width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0,
-                  background: done || active ? "var(--color-primary)" : "transparent",
-                  border: done || active ? "none" : "1.5px solid var(--color-hairline)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "11px", fontWeight: 700,
-                  color: done || active ? "white" : "var(--color-ink-muted-48)",
-                }}>
-                  {done ? "✓" : num}
-                </div>
-                <span style={{
-                  fontSize: "13px",
-                  fontWeight: active ? 600 : 400,
-                  whiteSpace: "nowrap",
-                  color: active ? "var(--color-ink)" : done ? "var(--color-primary)" : "var(--color-ink-muted-48)",
-                }}>
-                  {label}
-                </span>
-              </div>
-              {i < STEPS.length - 1 && (
-                <div style={{
-                  width: "28px", height: "1px", margin: "0 8px", flexShrink: 0,
-                  background: done ? "var(--color-primary)" : "var(--color-hairline)",
-                }} />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // ── Confirmation Modal ────────────────────────────────────────────────────────
 
 function ConfirmModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 200,
-      background: "rgba(0, 0, 0, 0.32)",
+      background: "rgba(15, 23, 42, 0.4)",
       display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "24px",
+      padding: "24px", backdropFilter: "blur(4px)",
     }}>
-      <div className="card" style={{ maxWidth: "400px", width: "100%" }}>
-        <h3 style={{ fontWeight: 600, fontSize: "19px", marginBottom: "10px", letterSpacing: "-0.01em" }}>
+      <div style={{
+        maxWidth: "400px", width: "100%",
+        background: "white", borderRadius: "20px",
+        border: "1px solid rgba(15,23,42,0.06)",
+        boxShadow: "0 24px 80px rgba(15,23,42,0.15)",
+        padding: "36px 32px",
+      }}>
+        <h3 style={{ fontWeight: 700, fontSize: "20px", marginBottom: "10px", letterSpacing: "-0.02em", color: "#0F172A" }}>
           답안 제출
         </h3>
-        <p style={{ color: "var(--color-ink-muted-80)", marginBottom: "28px", lineHeight: 1.6 }}>
-          답안을 제출하면 결과가 저장됩니다.<br />제출하시겠습니까?
+        <p style={{ color: "#64748B", marginBottom: "28px", lineHeight: 1.65, fontSize: "15px" }}>
+          제출 후에는 답안을 수정할 수 없습니다.<br />지금 제출하시겠습니까?
         </p>
         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-          <button className="button-secondary" onClick={onCancel}>취소</button>
-          <button className="button-primary"   onClick={onConfirm}>제출하기</button>
+          <button className="button-secondary" onClick={onCancel} style={{ minHeight: "42px" }}>취소</button>
+          <button className="button-primary" onClick={onConfirm} style={{ minHeight: "42px", fontSize: "15px" }}>제출하기</button>
         </div>
       </div>
     </div>
@@ -101,94 +48,111 @@ function ResultView({
 }) {
   const pct   = result.percentage;
   const grade = pct >= 90 ? "우수" : pct >= 70 ? "양호" : pct >= 50 ? "보통" : "미흡";
-  const gradeColor = pct >= 90 ? "var(--color-green)"
-    : pct >= 70 ? "var(--color-primary)"
-    : pct >= 50 ? "var(--color-amber)"
-    : "var(--color-red)";
+  const gradeColor = pct >= 90 ? "#059669" : pct >= 70 ? "#2563EB" : pct >= 50 ? "#D97706" : "#DC2626";
+  const gradeBg    = pct >= 90 ? "#F0FDF4" : pct >= 70 ? "#EFF6FF" : pct >= 50 ? "#FFFBEB" : "#FFF1F2";
 
   return (
-    <div style={{ maxWidth: "860px", margin: "0 auto", padding: "40px 24px 80px" }}>
+    <div style={{
+      minHeight: "100vh",
+      background: "radial-gradient(ellipse at 60% -10%, #E0E7FF 0%, #F5F7FA 50%, #EFF6FF 100%)",
+    }}>
+      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "40px 24px 80px" }}>
 
-      {/* Hero Score Card */}
-      <div className="card" style={{ textAlign: "center", padding: "52px 32px", marginBottom: "40px" }}>
-        <p className="muted-text" style={{ marginBottom: "16px" }}>
-          {participant.department ? `${participant.department} · ` : ""}
-          <strong style={{ color: "var(--color-ink)" }}>{participant.name}</strong>님의 챌린지 결과
-        </p>
+        {/* Score card */}
         <div style={{
-          fontSize: "80px", fontWeight: 700, lineHeight: 1,
-          letterSpacing: "-0.04em", color: gradeColor, marginBottom: "6px",
+          background: "rgba(255,255,255,0.9)",
+          border: "1px solid rgba(15,23,42,0.06)",
+          borderRadius: "28px",
+          boxShadow: "0 24px 80px rgba(15,23,42,0.10)",
+          overflow: "hidden",
+          marginBottom: "28px",
+          backdropFilter: "blur(16px)",
         }}>
-          {result.totalScore}
-        </div>
-        <div style={{ fontSize: "22px", color: "var(--color-ink-muted-48)", marginBottom: "24px" }}>
-          / {result.maxScore}점
-        </div>
-        <span style={{
-          display: "inline-flex", alignItems: "center",
-          height: "34px", padding: "0 18px",
-          background: gradeColor, color: "white",
-          borderRadius: "var(--radius-pill)",
-          fontSize: "14px", fontWeight: 600,
-        }}>
-          {grade} · 정답률 {result.percentage}%
-        </span>
-        <p className="muted-text" style={{ marginTop: "16px", fontSize: "13px" }}>
-          제출 시각: {new Date(result.submittedAt).toLocaleString("ko-KR")}
-        </p>
-      </div>
-
-      {/* Question Result Grid */}
-      <h2 className="section-title" style={{ marginBottom: "20px" }}>문항별 결과</h2>
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-        gap: "16px",
-        marginBottom: "48px",
-      }}>
-        {result.results.map((r) => {
-          const isCorrect = r.score === r.maxScore;
-          const isPartial = r.score > 0 && r.score < r.maxScore;
-          const statusColor = isCorrect ? "var(--color-green)" : isPartial ? "var(--color-amber)" : "var(--color-red)";
-          const statusLabel = isCorrect ? "정답" : isPartial ? "부분" : "오답";
-          const cardBg      = isCorrect ? "#f0fdf4" : isPartial ? "#fefce8" : "#fff1f2";
-          const cardBorder  = isCorrect ? "#86efac" : isPartial ? "#fde047" : "#fca5a5";
-          return (
-            <div key={r.questionId} style={{
-              background: cardBg, border: `1px solid ${cardBorder}`,
-              borderRadius: "var(--radius-card)", padding: "22px",
+          <div style={{
+            background: gradeBg,
+            padding: "48px 32px",
+            textAlign: "center",
+            borderBottom: "1px solid rgba(15,23,42,0.06)",
+          }}>
+            <p style={{ fontSize: "13px", color: "#94A3B8", marginBottom: "20px" }}>
+              {participant.department ? `${participant.department} · ` : ""}
+              <strong style={{ color: "#0F172A" }}>{participant.name}</strong>님의 진단 결과
+            </p>
+            <div style={{
+              fontSize: "88px", fontWeight: 800, lineHeight: 1,
+              letterSpacing: "-0.05em", color: gradeColor, marginBottom: "6px",
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <span style={{ fontWeight: 700, fontSize: "16px", color: statusColor }}>{r.questionId}</span>
-                <span style={{
-                  background: statusColor, color: "white",
-                  borderRadius: "var(--radius-pill)", padding: "2px 10px",
-                  fontSize: "11px", fontWeight: 700,
-                }}>
-                  {statusLabel}
-                </span>
-              </div>
-              <p style={{ fontSize: "14px", color: "var(--color-ink-muted-80)", marginBottom: "12px", lineHeight: 1.5 }}>
-                {r.title}
-              </p>
-              <div style={{ marginBottom: "10px" }}>
-                <span style={{ fontSize: "28px", fontWeight: 700, color: statusColor, letterSpacing: "-0.02em" }}>
-                  {r.score}
-                </span>
-                <span style={{ fontSize: "14px", color: "var(--color-ink-muted-48)" }}>
-                  /{r.maxScore}점
-                </span>
-              </div>
-              <p style={{ fontSize: "13px", color: "var(--color-ink-muted-48)", lineHeight: 1.55 }}>
-                {r.feedback}
-              </p>
+              {result.totalScore}
             </div>
-          );
-        })}
-      </div>
+            <div style={{ fontSize: "18px", color: "#94A3B8", marginBottom: "20px" }}>
+              / {result.maxScore}점
+            </div>
+            <span style={{
+              display: "inline-flex", alignItems: "center",
+              height: "36px", padding: "0 20px",
+              background: gradeColor, color: "white",
+              borderRadius: "9999px",
+              fontSize: "14px", fontWeight: 700,
+              letterSpacing: "0.02em",
+            }}>
+              {grade} · 정답률 {result.percentage}%
+            </span>
+            <p style={{ marginTop: "16px", fontSize: "12px", color: "#B0BFCF" }}>
+              제출 시각: {new Date(result.submittedAt).toLocaleString("ko-KR")}
+            </p>
+          </div>
 
-      <div style={{ textAlign: "center" }}>
-        <button className="button-secondary" onClick={onRetry}>다시 시도하기</button>
+          {/* Per-question results */}
+          <div style={{ padding: "24px 28px" }}>
+            <h2 style={{ fontSize: "15px", fontWeight: 700, color: "#0F172A", marginBottom: "16px", letterSpacing: "-0.01em" }}>
+              문항별 결과
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {result.results.map((r) => {
+                const isCorrect = r.score === r.maxScore;
+                const isPartial = r.score > 0 && r.score < r.maxScore;
+                const statusColor = isCorrect ? "#059669" : isPartial ? "#D97706" : "#DC2626";
+                const statusLabel = isCorrect ? "정답" : isPartial ? "부분" : "오답";
+                const cardBg      = isCorrect ? "#F0FDF4"  : isPartial ? "#FFFBEB"  : "#FFF1F2";
+                const cardBorder  = isCorrect ? "#A7F3D0" : isPartial ? "#FDE68A" : "#FECACA";
+                return (
+                  <div key={r.questionId} style={{
+                    background: cardBg,
+                    border: `1px solid ${cardBorder}`,
+                    borderRadius: "14px", padding: "18px 20px",
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                      <span style={{ fontWeight: 700, fontSize: "13px", color: statusColor, letterSpacing: "0.02em" }}>{r.questionId}</span>
+                      <span style={{
+                        background: statusColor, color: "white",
+                        borderRadius: "9999px", padding: "2px 10px",
+                        fontSize: "11px", fontWeight: 700,
+                      }}>
+                        {statusLabel}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "14px", color: "#475569", marginBottom: "10px", lineHeight: 1.5, fontWeight: 500 }}>
+                      {r.title}
+                    </p>
+                    <div style={{ marginBottom: "8px" }}>
+                      <span style={{ fontSize: "26px", fontWeight: 800, color: statusColor, letterSpacing: "-0.03em" }}>
+                        {r.score}
+                      </span>
+                      <span style={{ fontSize: "13px", color: "#94A3B8" }}>/{r.maxScore}점</span>
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#64748B", lineHeight: 1.6 }}>{r.feedback}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center" }}>
+          <button className="button-secondary" onClick={onRetry} style={{ minHeight: "44px" }}>
+            다시 시도하기
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -217,7 +181,6 @@ function QuestionCard({
       </div>
       <div className="question-title">{q.title}</div>
       <div className="question-text">{q.question}</div>
-      {q.note && <div className="question-note">⚠ {q.note}</div>}
 
       {/* single_choice */}
       {q.type === "single_choice" && (
@@ -240,8 +203,8 @@ function QuestionCard({
       {/* multiple_choice */}
       {q.type === "multiple_choice" && (
         <div className="options">
-          <p style={{ fontSize: "13px", color: "var(--color-ink-muted-48)", marginBottom: "10px" }}>
-            {q.select_count}개 선택 ({((answer as string[]) ?? []).length}/{q.select_count})
+          <p style={{ fontSize: "12px", color: "#94A3B8", marginBottom: "10px", fontWeight: 500 }}>
+            {q.select_count}개 선택
           </p>
           {q.options?.map(opt => {
             const sel = (answer as string[]) ?? [];
@@ -262,8 +225,8 @@ function QuestionCard({
       {/* file_selection */}
       {q.type === "file_selection" && (
         <div className="options">
-          <p style={{ fontSize: "13px", color: "var(--color-ink-muted-48)", marginBottom: "10px" }}>
-            {q.select_count}개 선택 ({((answer as string[]) ?? []).length}/{q.select_count})
+          <p style={{ fontSize: "12px", color: "#94A3B8", marginBottom: "10px", fontWeight: 500 }}>
+            {q.select_count}개 선택
           </p>
           {q.options?.map(opt => {
             const sel = (answer as string[]) ?? [];
@@ -274,7 +237,7 @@ function QuestionCard({
                   checked={sel.includes(opt.id)}
                   onChange={() => onMultipleToggle(opt.id)}
                 />
-                <span style={{ fontFamily: "ui-monospace, monospace", fontSize: "0.88em" }}>
+                <span style={{ fontFamily: "ui-monospace, monospace", fontSize: "13px" }}>
                   {opt.label}
                 </span>
               </label>
@@ -368,8 +331,6 @@ export default function ChallengeForm({
     setError(null);
     setLoading(true);
 
-    console.log("제출 answers:", answers);
-
     try {
       const res = await fetch("/api/grade", {
         method:  "POST",
@@ -396,21 +357,17 @@ export default function ChallengeForm({
   // ── Result view ─────────────────────────────────────────────────────────────
   if (result) {
     return (
-      <>
-        <ProgressBar step={5} />
-        <ResultView
-          result={result}
-          participant={participant}
-          onRetry={() => { setResult(null); setAnswers({}); }}
-        />
-      </>
+      <ResultView
+        result={result}
+        participant={participant}
+        onRetry={() => { setResult(null); setAnswers({}); }}
+      />
     );
   }
 
   // ── Challenge view ──────────────────────────────────────────────────────────
   return (
     <>
-      <ProgressBar step={4} />
 
       {showConfirm && (
         <ConfirmModal onConfirm={confirmSubmit} onCancel={() => setShowConfirm(false)} />
@@ -420,7 +377,6 @@ export default function ChallengeForm({
 
         {/* Challenge header */}
         <header className="header">
-          <div className="badge">{challenge.company}</div>
           <h1>{challenge.title}</h1>
           <p className="subtitle">{challenge.subtitle}</p>
           <div className="meta">
@@ -436,7 +392,7 @@ export default function ChallengeForm({
           <div className="download-area">
             <div className="download-info">
               <p>ZIP 파일을 내려받아 AI 도구와 함께 분석하세요.</p>
-              <p>압축 해제 후 65개 파일을 검토하고 문항의 답을 찾으세요.</p>
+              <p>압축 해제 후 파일을 검토하고 문항의 답을 찾으세요.</p>
             </div>
             <a href="/downloads/welcome_day_workspace.zip" download className="btn btn-primary">
               ⬇ 워크스페이스 ZIP 다운로드
@@ -462,7 +418,7 @@ export default function ChallengeForm({
           <div className="steps">
             {[
               "위 버튼을 눌러 워크스페이스 ZIP 파일을 다운로드하세요.",
-              "압축을 해제하면 전임자(김하늘 매니저)의 폴더 구조가 나타납니다.",
+              "압축을 해제하면 전임자의 폴더 구조가 나타납니다.",
               "파일들을 꼼꼼히 검토하며 각 문항의 답을 찾으세요.",
               "AI 도구(ChatGPT, Claude 등)를 자유롭게 활용할 수 있습니다.",
               "5개 문항에 모두 답을 입력한 후 제출 버튼을 누르세요.",
@@ -477,22 +433,26 @@ export default function ChallengeForm({
 
         {/* Questions */}
         <section className="section">
-          <h2 className="section-title">✏️ 답안 입력</h2>
-
-          {/* Participant info (read-only) */}
+          {/* Participant info */}
           <div style={{
-            display: "flex", alignItems: "center", gap: "12px",
-            padding: "12px 16px", marginBottom: "20px",
-            background: "var(--color-canvas-parchment)",
-            borderRadius: "var(--radius-pill)",
-            border: "1px solid var(--color-hairline)",
+            display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap",
+            padding: "10px 14px", marginBottom: "20px",
+            background: "#F8FAFC", borderRadius: "10px",
+            border: "1px solid rgba(15,23,42,0.07)",
           }}>
-            <span style={{ fontSize: "14px", color: "var(--color-ink-muted-48)" }}>제출자</span>
-            <span style={{ fontWeight: 600 }}>{participant.name}</span>
+            <span style={{ fontSize: "12px", color: "#94A3B8", fontWeight: 500 }}>제출자</span>
+            <span style={{ fontWeight: 700, fontSize: "14px", color: "#0F172A" }}>{participant.name}</span>
             {participant.department && (
-              <span style={{ fontSize: "14px", color: "var(--color-ink-muted-48)" }}>{participant.department}</span>
+              <span style={{ fontSize: "13px", color: "#64748B" }}>{participant.department}</span>
             )}
-            <span className="badge" style={{ marginLeft: "auto" }}>코드 {participant.code}</span>
+            <span style={{
+              marginLeft: "auto", fontSize: "11px", fontWeight: 700,
+              color: "#2563EB", background: "rgba(37,99,235,0.08)",
+              padding: "3px 10px", borderRadius: "9999px",
+              letterSpacing: "0.04em",
+            }}>
+              코드 {participant.code}
+            </span>
           </div>
 
           {error && <div className="error-box">{error}</div>}

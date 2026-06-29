@@ -1,38 +1,112 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import type { QuestionsData, Participant } from "@/types";
 import ChallengeForm from "./ChallengeForm";
 
 const STORAGE_KEY = "wdc_participant";
 
-// ── Sticky Bar ────────────────────────────────────────────────────────────────
+const BG = "radial-gradient(ellipse at 60% -10%, #E0E7FF 0%, #F5F7FA 50%, #EFF6FF 100%)";
 
-function StickyBar({ participant }: { participant: Participant | null }) {
+const CARD_STYLE: React.CSSProperties = {
+  background: "rgba(255,255,255,0.88)",
+  border: "1px solid rgba(15,23,42,0.06)",
+  borderRadius: "28px",
+  boxShadow: "0 24px 80px rgba(15,23,42,0.10)",
+  backdropFilter: "blur(16px)",
+  WebkitBackdropFilter: "blur(16px)",
+};
+
+const INPUT_STYLE: React.CSSProperties = {
+  width: "100%",
+  minHeight: "50px",
+  padding: "0 16px",
+  border: "1.5px solid rgba(15,23,42,0.12)",
+  borderRadius: "12px",
+  fontSize: "16px",
+  color: "#0F172A",
+  outline: "none",
+  background: "white",
+  fontFamily: "inherit",
+  transition: "border-color 0.15s, box-shadow 0.15s",
+};
+
+// ── Landing ───────────────────────────────────────────────────────────────────
+
+function LandingView({ onStart }: { onStart: () => void }) {
   return (
-    <header className="sticky-bar">
-      <div className="sticky-bar-inner">
-        <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--color-ink)", letterSpacing: "-0.01em" }}>
-          넥스트웨이브 코리아 · 웰컴데이
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "24px",
+      background: BG,
+    }}>
+      <div style={{ ...CARD_STYLE, width: "100%", maxWidth: "460px", padding: "52px 44px", textAlign: "center" }}>
+
+        <span style={{
+          display: "inline-block",
+          fontSize: "11px", fontWeight: 700,
+          letterSpacing: "0.12em", textTransform: "uppercase",
+          color: "#2563EB",
+          background: "rgba(37,99,235,0.08)",
+          padding: "4px 12px", borderRadius: "9999px",
+          marginBottom: "24px",
+        }}>
+          AI TOP100
         </span>
-        {participant ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "14px", color: "var(--color-ink-muted-48)" }}>
-              {participant.department ? `${participant.department} · ` : ""}{participant.name}
-            </span>
-            <span className="badge">코드 {participant.code}</span>
-          </div>
-        ) : (
-          <span className="badge">AI 챌린지 2025</span>
-        )}
+
+        <h1 style={{
+          fontSize: "clamp(28px, 6vw, 40px)", fontWeight: 800,
+          letterSpacing: "-0.04em", lineHeight: 1.1,
+          color: "#0F172A", marginBottom: "14px",
+        }}>
+          업무 역량 진단
+        </h1>
+
+        <p style={{
+          fontSize: "15px", color: "#64748B",
+          lineHeight: 1.7, marginBottom: "40px",
+        }}>
+          AI를 활용한 실전 업무 능력을 점검하는<br />역량 진단 평가입니다.
+        </p>
+
+        <button
+          onClick={onStart}
+          className="button-primary"
+          style={{ width: "100%", minHeight: "56px", fontSize: "17px", borderRadius: "14px", marginBottom: "10px" }}
+        >
+          진단 시작하기
+        </button>
+
+        <Link
+          href="/admin/login"
+          style={{
+            display: "block",
+            fontSize: "13px", color: "#94A3B8",
+            textDecoration: "none", padding: "10px",
+            transition: "color 0.15s",
+          }}
+        >
+          관리자 모드
+        </Link>
       </div>
-    </header>
+    </div>
   );
 }
 
 // ── Entry Form ────────────────────────────────────────────────────────────────
 
-function EntryCard({ onEntered }: { onEntered: (p: Participant) => void }) {
+function EntryView({
+  onBack,
+  onEntered,
+}: {
+  onBack: () => void;
+  onEntered: (p: Participant) => void;
+}) {
   const [name,       setName]       = useState("");
   const [department, setDepartment] = useState("");
   const [code,       setCode]       = useState("");
@@ -63,94 +137,115 @@ function EntryCard({ onEntered }: { onEntered: (p: Participant) => void }) {
   }
 
   return (
-    <div className="card" style={{ maxWidth: "440px", margin: "0 auto" }}>
-      <h2 style={{ fontSize: "21px", fontWeight: 600, letterSpacing: "-0.01em", marginBottom: "6px" }}>
-        챌린지 입장
-      </h2>
-      <p className="muted-text" style={{ marginBottom: "24px" }}>
-        진행자에게 받은 4자리 입장코드를 입력하세요.
-      </p>
-
-      {error && (
-        <div style={{
-          background: "#fff1f2",
-          border: "1px solid #fca5a5",
-          borderRadius: "var(--radius-sm)",
-          padding: "10px 14px",
-          color: "var(--color-red)",
-          fontSize: "14px",
-          marginBottom: "16px",
-        }}>
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-        <div>
-          <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-ink-muted-48)", marginBottom: "6px" }}>
-            이름 *
-          </label>
-          <input
-            className="input"
-            type="text"
-            placeholder="홍길동"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            autoComplete="name"
-          />
-        </div>
-
-        <div>
-          <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-ink-muted-48)", marginBottom: "6px" }}>
-            소속 부서 <span style={{ fontWeight: 400 }}>(선택)</span>
-          </label>
-          <input
-            className="input"
-            type="text"
-            placeholder="마케팅팀"
-            value={department}
-            onChange={e => setDepartment(e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-ink-muted-48)", marginBottom: "6px" }}>
-            입장코드 *
-          </label>
-          <input
-            className="input"
-            type="text"
-            inputMode="numeric"
-            maxLength={4}
-            placeholder="0000"
-            value={code}
-            onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
-            style={{
-              letterSpacing: "0.3em",
-              textAlign: "center",
-              fontVariantNumeric: "tabular-nums" as React.CSSProperties["fontVariantNumeric"],
-              fontSize: "22px",
-            }}
-          />
-        </div>
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "24px",
+      background: BG,
+    }}>
+      <div style={{ width: "100%", maxWidth: "440px" }}>
 
         <button
-          type="submit"
-          className="button-primary"
-          disabled={loading}
-          style={{ width: "100%", marginTop: "4px" }}
+          onClick={onBack}
+          style={{
+            display: "flex", alignItems: "center", gap: "6px",
+            background: "none", border: "none", cursor: "pointer",
+            color: "#64748B", fontSize: "14px", fontWeight: 500,
+            marginBottom: "16px", padding: "0", fontFamily: "inherit",
+          }}
         >
-          {loading ? "확인 중…" : "챌린지 입장"}
+          ← 홈으로
         </button>
-      </form>
+
+        <div style={{ ...CARD_STYLE, padding: "40px 36px" }}>
+          <h2 style={{
+            fontSize: "22px", fontWeight: 700,
+            letterSpacing: "-0.02em", marginBottom: "6px", color: "#0F172A",
+          }}>
+            진단 입장
+          </h2>
+          <p style={{ fontSize: "14px", color: "#94A3B8", marginBottom: "28px" }}>
+            진행자에게 받은 4자리 입장코드를 입력하세요.
+          </p>
+
+          {error && (
+            <div style={{
+              background: "#FEF2F2",
+              border: "1px solid rgba(220,38,38,0.2)",
+              borderRadius: "10px",
+              padding: "10px 14px",
+              color: "#DC2626", fontSize: "13px", marginBottom: "18px",
+            }}>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
+                이름 *
+              </label>
+              <input
+                type="text" placeholder="홍길동"
+                value={name} onChange={e => setName(e.target.value)}
+                autoComplete="name"
+                style={INPUT_STYLE}
+                onFocus={e => { e.currentTarget.style.borderColor = "#2563EB"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.08)"; }}
+                onBlur={e  => { e.currentTarget.style.borderColor = "rgba(15,23,42,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
+                소속 부서 <span style={{ fontWeight: 400, color: "#94A3B8" }}>(선택)</span>
+              </label>
+              <input
+                type="text" placeholder="마케팅팀"
+                value={department} onChange={e => setDepartment(e.target.value)}
+                style={INPUT_STYLE}
+                onFocus={e => { e.currentTarget.style.borderColor = "#2563EB"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.08)"; }}
+                onBlur={e  => { e.currentTarget.style.borderColor = "rgba(15,23,42,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
+                입장코드 *
+              </label>
+              <input
+                type="text" inputMode="numeric" maxLength={4}
+                placeholder="0000"
+                value={code}
+                onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                style={{ ...INPUT_STYLE, fontSize: "28px", fontWeight: 700, letterSpacing: "0.3em", textAlign: "center" }}
+                onFocus={e => { e.currentTarget.style.borderColor = "#2563EB"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.08)"; }}
+                onBlur={e  => { e.currentTarget.style.borderColor = "rgba(15,23,42,0.12)"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="button-primary"
+              disabled={loading}
+              style={{ width: "100%", minHeight: "54px", marginTop: "4px", borderRadius: "13px", fontSize: "16px" }}
+            >
+              {loading ? "확인 중…" : "입장하기"}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
 
-// ── Root Component ────────────────────────────────────────────────────────────
+// ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function ChallengeApp({ data }: { data: QuestionsData }) {
   const [participant, setParticipant] = useState<Participant | null>(null);
+  const [showEntry,   setShowEntry]   = useState(false);
   const [mounted,     setMounted]     = useState(false);
 
   useEffect(() => {
@@ -164,52 +259,12 @@ export default function ChallengeApp({ data }: { data: QuestionsData }) {
   function handleEntered(p: Participant) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
     setParticipant(p);
+    setShowEntry(false);
   }
 
-  // Avoid hydration mismatch — show minimal shell until client is ready
-  if (!mounted) {
-    return (
-      <div className="page-shell">
-        <header className="sticky-bar">
-          <div className="sticky-bar-inner">
-            <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--color-ink)" }}>
-              넥스트웨이브 코리아 · 웰컴데이
-            </span>
-            <span className="badge">AI 챌린지 2025</span>
-          </div>
-        </header>
-      </div>
-    );
-  }
+  if (!mounted) return null;
 
-  return (
-    <div className="page-shell">
-      <StickyBar participant={participant} />
-
-      {participant ? (
-        // ── Post-entry: challenge form ──────────────────────────────────────
-        <ChallengeForm data={data} participant={participant} />
-      ) : (
-        // ── Pre-entry: hero + entry card ────────────────────────────────────
-        <>
-          <section className="hero-section">
-            <div style={{ marginBottom: "20px" }}>
-              <span className="badge">2025 웰컴데이 미션</span>
-            </div>
-            <h1 className="hero-title">
-              전임자의<br />워크스페이스를<br />복구하라
-            </h1>
-            <p className="hero-subtitle">
-              AI와 함께 흩어진 자료를 분석하고<br />
-              운영 점검 미션을 완수하세요.
-            </p>
-          </section>
-
-          <div style={{ padding: "48px 24px 80px" }}>
-            <EntryCard onEntered={handleEntered} />
-          </div>
-        </>
-      )}
-    </div>
-  );
+  if (participant) return <ChallengeForm data={data} participant={participant} />;
+  if (showEntry)  return <EntryView onBack={() => setShowEntry(false)} onEntered={handleEntered} />;
+  return <LandingView onStart={() => setShowEntry(true)} />;
 }
