@@ -1,9 +1,10 @@
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
-import { getAuth, type Auth } from "firebase-admin/auth";
 
-// Lazy singleton — throws only when first DB/Auth call is made, not at import time.
-// This lets the module load without crashing in environments where env vars aren't set.
+// NOTE: firebase-admin/auth intentionally NOT imported —
+// it pulls in jwks-rsa → jose (ESM-only) which breaks Vercel Node.js runtime.
+// Admin auth is handled via HMAC-SHA256 cookie in src/lib/adminSession.ts.
+
 function ensureApp(): App {
   if (getApps().length > 0) return getApps()[0];
 
@@ -23,4 +24,3 @@ function ensureApp(): App {
 }
 
 export function getAdminDb(): Firestore { return getFirestore(ensureApp()); }
-export function getAdminAuth(): Auth    { return getAuth(ensureApp()); }

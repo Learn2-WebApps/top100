@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSessionValue, COOKIE_NAME } from "@/lib/adminSession";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const { password } = (await req.json()) as { password?: string };

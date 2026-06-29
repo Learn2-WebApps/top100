@@ -3,6 +3,9 @@ import path from "path";
 import fs from "fs";
 import { getAdminDb } from "@/lib/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 import type { GradeRequest, GradeResponse, QuestionResult } from "@/types";
 
 interface AnswerEntry {

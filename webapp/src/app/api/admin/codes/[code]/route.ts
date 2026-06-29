@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { getAdminDb } from "@/lib/firebaseAdmin";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 function unauthorized() {
   return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
 }

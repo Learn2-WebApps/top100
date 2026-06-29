@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 interface EnterRequest {
   name: string;
   department: string;
