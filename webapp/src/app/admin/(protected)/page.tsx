@@ -245,11 +245,11 @@ function DeleteModal({
           <strong style={{ color: "#0F172A" }}>{code}</strong> ({title}) 세션을 삭제합니다.
         </p>
         <div style={{
-          background: "#FFFBEB", border: "1px solid #FDE68A",
+          background: "#FEF2F2", border: "1px solid #FECACA",
           borderRadius: "8px", padding: "10px 14px",
-          fontSize: "13px", color: "#92400E", marginBottom: "24px", lineHeight: 1.5,
+          fontSize: "13px", color: "#991B1B", marginBottom: "24px", lineHeight: 1.6,
         }}>
-          삭제 대신 비활성화를 권장합니다. 비활성화하면 데이터를 유지하면서 입장을 막을 수 있습니다.
+          이 세션을 삭제하면 참여자 정보와 제출 결과가 모두 삭제되며 복구할 수 없습니다.
         </div>
         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
           <button className="button-secondary" onClick={onCancel} style={{ minHeight: "40px" }}>취소</button>

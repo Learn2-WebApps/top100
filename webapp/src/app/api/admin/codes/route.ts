@@ -118,15 +118,10 @@ export async function POST(req: NextRequest) {
     const existing = await ref.get();
 
     if (existing.exists) {
-      const data = existing.data()!;
-      if (data.deleted !== true) {
-        // Active code — cannot reuse
-        return NextResponse.json(
-          { ok: false, error: "CODE_ALREADY_EXISTS", message: `코드 ${code}는 이미 존재합니다.` },
-          { status: 409 }
-        );
-      }
-      // deleted === true → allow re-creation with a fresh sessionId
+      return NextResponse.json(
+        { ok: false, error: "CODE_ALREADY_EXISTS", message: `코드 ${code}는 이미 존재합니다.` },
+        { status: 409 }
+      );
     }
 
     const sessionId = crypto.randomUUID();
@@ -135,8 +130,6 @@ export async function POST(req: NextRequest) {
       sessionId,
       title:     title!.trim(),
       active:    true,
-      deleted:   false,
-      deletedAt: null,
       createdAt: FieldValue.serverTimestamp(),
       createdBy: "관리자",
     });
