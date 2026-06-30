@@ -362,12 +362,19 @@ export default function ChallengeForm({
           answers,
         }),
       });
-      if (!res.ok) throw new Error("서버 오류");
-      const gradeData = (await res.json()) as GradeResponse;
-      setResult(gradeData);
+      const ct = res.headers.get("content-type") ?? "";
+      const payload = ct.includes("application/json")
+        ? await res.json()
+        : { error: await res.text() };
+      if (!res.ok) {
+        const msg = (payload as { error?: string }).error;
+        setError(msg ?? "채점 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+      setResult(payload as GradeResponse);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
-      setError("채점 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
@@ -395,39 +402,17 @@ export default function ChallengeForm({
 
         {/* Header */}
         <header className="header">
-          <h1>AI TOP100 업무 복구 미션</h1>
+          <h1>인수인계 없는 첫 출근</h1>
         </header>
 
         {/* Mission description */}
         <section className="section">
           <h2 className="section-title">📋 미션 안내</h2>
           <div className="description" style={{ display: "flex", flexDirection: "column", gap: "14px", lineHeight: 1.8 }}>
-            <p>당신은 오늘 막 새로운 업무 프로젝트에 투입되었습니다.</p>
             <p>
-              그런데 시작부터 상황이 심상치 않습니다.<br />
-              원래 이 업무를 담당하던 사람은 갑작스럽게 자리를 비웠고, 팀 안에는 이 업무의 전체 흐름을 정확히 알고 있는 사람이 없습니다.
-            </p>
-            <p>남겨진 것은 정리되지 않은 워크스페이스뿐입니다.</p>
-            <p>
-              폴더 안에는 문서, 표, 메모, 이미지, 압축파일 등 여러 자료가 뒤섞여 있습니다.<br />
-              어떤 파일은 중요한 단서처럼 보이고, 어떤 파일은 별 의미 없어 보입니다.<br />
-              하지만 실제 핵심 정보는 예상치 못한 곳에 숨어 있을 수 있습니다.
-            </p>
-            <p style={{ fontStyle: "italic", color: "#475569", borderLeft: "3px solid #E2E8F0", paddingLeft: "16px" }}>
-              "자료를 확인해서 현재 상황을 파악해 주세요.<br />
-              필요한 정보가 무엇인지, 어떤 내용이 중요한지, 문제별로 정확히 정리해 주면 됩니다."
-            </p>
-            <p>이제 당신은 제한된 자료를 바탕으로 업무의 맥락을 복원해야 합니다.</p>
-            <p>
-              단순히 파일을 많이 여는 것이 중요한 것이 아닙니다.<br />
-              중요한 것은 자료 속 단서를 연결하고, 필요한 정보와 불필요한 정보를 구분하고, 근거 있는 답을 찾아내는 것입니다.
-            </p>
-            <p>
-              AI를 활용해 자료를 분석해도 좋습니다.<br />
-              하지만 최종 답변은 반드시 제공된 자료에서 확인 가능한 사실에 기반해야 합니다.
-            </p>
-            <p style={{ fontWeight: 600, color: "#0F172A" }}>
-              흩어진 자료 속에서 핵심 정보를 찾아내고, 총 5개의 문제에 답하세요.
+              당신은 웰컴데이 운영 업무를 갑작스럽게 맡게 된 신입사원입니다.<br />
+              명확한 인수인계 문서는 없고, 남겨진 것은 메일, 메모, 체크리스트, 첨부자료뿐입니다.<br />
+              흩어진 자료 속에서 최종 정보와 미확정 사항을 파악해 업무 상황을 정리하세요.
             </p>
           </div>
         </section>

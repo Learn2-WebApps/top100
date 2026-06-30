@@ -56,7 +56,7 @@ function LandingView({ onStart }: { onStart: () => void }) {
           padding: "4px 12px", borderRadius: "9999px",
           marginBottom: "24px",
         }}>
-          AI TOP100
+          업무 정보 분석 미션
         </span>
 
         <h1 style={{
@@ -64,14 +64,14 @@ function LandingView({ onStart }: { onStart: () => void }) {
           letterSpacing: "-0.04em", lineHeight: 1.1,
           color: "#0F172A", marginBottom: "14px",
         }}>
-          업무 역량 진단
+          인수인계 없는 첫 출근
         </h1>
 
         <p style={{
           fontSize: "15px", color: "#64748B",
           lineHeight: 1.7, marginBottom: "40px",
         }}>
-          AI를 활용한 실전 업무 능력을 점검하는<br />역량 진단 평가입니다.
+          흩어진 자료 속에서 핵심 정보를 찾아<br />업무 상황을 파악하는 실전 미션입니다.
         </p>
 
         <button

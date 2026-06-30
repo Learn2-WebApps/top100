@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI TOP100 업무 역량 진단",
-  description: "AI를 활용한 실전 업무 역량을 점검하는 평가입니다.",
+  title: "인수인계 없는 첫 출근",
+  description: "흩어진 자료 속에서 핵심 정보를 찾아 업무 상황을 파악하는 실전 미션입니다.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
