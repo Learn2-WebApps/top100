@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "generated": "2025-07-20",
+  "answers": {
+    "Q1": {
+      "type": "single_choice",
+      "answer": "B",
+      "score": 20,
+      "maxScore": 20,
+      "grading": "exact_match",
+      "feedback_correct": "정확합니다. 처음에는 A홀로 계약되었으나 7월 18일 변경 공지를 통해 5층 그랜드홀 B룸으로 확정되었습니다. 대관료 영수증(0719)도 B룸으로 발행된 것을 교차 확인할 수 있습니다.",
+      "feedback_incorrect": "아직 A홀이 최종 장소라고 판단했다면, 7/18 이후 파일을 놓쳤을 가능성이 높습니다. 장소변경_공지_0718.txt와 대관료_B룸_영수증_0719.md를 확인해보세요. 계약서(0712)와 안내문(0716)은 변경 이전 시점의 문서입니다."
+    },
+    "Q2": {
+      "type": "number_input",
+      "answer": 34,
+      "score": 20,
+      "maxScore": 20,
+      "grading": "exact_match",
+      "tolerance": 0,
+      "feedback_correct": "정확합니다. 7월 16일 4명의 취소 요청이 있었고(38명→34명), 7월 17일 회신 집계 결과 34명 확정. 7월 18일 명단이 최종 기준입니다.",
+      "feedback_incorrect": "34명이 아닌 다른 수치를 입력했다면: 40명은 HR 전체 신규입사자 수(참석 안 하는 인원 포함), 38명은 7/16 취소 요청 4건 반영 전 명단, 45명은 7/12 잠정 집계입니다. 7/18 확정 명단 파일이 최신이자 정답입니다."
+    },
+    "Q3": {
+      "type": "multiple_choice",
+      "answer": ["B", "D", "E"],
+      "score": 20,
+      "maxScore": 20,
+      "grading": "partial_with_penalty",
+      "score_per_correct": 6,
+      "penalty_per_wrong": 2,
+      "min_score": 0,
+      "feedback_correct": "정확합니다. 운영체크리스트_0720.md 기준으로 [△]로 표시된 3개 항목: 외부 강사 참석 확인(B), 주차 안내 배너 제작(D), 웰컴 키트 수령 확인(E)이 미확정입니다.",
+      "feedback_incorrect": "최신 체크리스트(0720)를 기준으로 확인하셨나요? 0715나 0717 버전은 다른 항목들이 미확정으로 표시되어 있어 혼동될 수 있습니다. 가장 최신 파일(0720)의 [△] 항목만 정답으로 인정됩니다."
+    },
+    "Q4": {
+      "type": "matching",
+      "answer": {
+        "S1": "P1",
+        "S2": "P3",
+        "S3": "P4",
+        "S4": "P2"
+      },
+      "answer_readable": {
+        "오프닝 세션": "박준혁 팀장",
+        "회사 소개 및 비전": "최민호 과장",
+        "조직 문화 워크숍": "정다은 대리",
+        "Q&A 및 네트워킹": "이소연 대리"
+      },
+      "score": 20,
+      "maxScore": 20,
+      "grading": "partial_per_pair",
+      "score_per_pair": 5,
+      "feedback_correct": "완벽합니다. 7월 18일 변경 공지를 통해 조직 문화 워크숍 담당자가 정다은 대리로 변경되었습니다. 나머지 3개 세션은 변경 없이 유지되었습니다.",
+      "feedback_incorrect": "'조직 문화 워크숍' 담당자가 틀렸다면 세션_담당자배정_0714.md를 최신 문서로 오인했을 가능성이 있습니다. 세션_담당자변경_0718.txt에서 이 담당자가 정다은 대리로 변경되었음을 확인하세요."
+    },
+    "Q5": {
+      "type": "file_selection",
+      "answer": ["A", "C", "E"],
+      "answer_readable": [
+        "1_메일/외부강사_확인요청_0714.txt",
+        "1_메일/김하늘_받은메일함_0715.txt",
+        "5_첨부자료/운영체크리스트_0720.md"
+      ],
+      "score": 20,
+      "maxScore": 20,
+      "grading": "partial_with_penalty",
+      "score_per_correct": 6,
+      "penalty_per_wrong": 2,
+      "min_score": 0,
+      "feedback_correct": "정확합니다. 세 파일을 통해 미확정 사실을 삼각검증할 수 있습니다: 확인 요청 발송 기록(A), 회신 부재 확인(C), 체크리스트 미완료 표시(E).",
+      "feedback_incorrect": "강사 프로필 파일(B)이나 프로그램 파일(D)은 강사 관련 파일이지만 '미확정임을 직접 입증'하지는 않습니다. 프로필은 참석 여부와 무관하고, 프로그램의 '담당자 미정' 표기만으로는 이유를 알 수 없습니다."
+    }
+  }
+}

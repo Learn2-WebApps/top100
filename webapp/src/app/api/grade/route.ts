@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
 import { getAdminDb } from "@/lib/firebaseAdmin";
 import { FieldValue } from "firebase-admin/firestore";
 import type { GradeRequest, GradeResponse, QuestionResult } from "@/types";
+
+import answerKeyData from "@/data/answer_key.json";
+import questionsData from "@/data/questions.json";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,18 +23,11 @@ interface AnswerEntry {
   tolerance?:         number;
 }
 
-interface AnswerKey { answers: Record<string, AnswerEntry>; }
-interface QData     { challenge: { total_score: number }; questions: { id: string; title: string }[]; }
-
-function loadJson<T>(relPath: string): T {
-  return JSON.parse(fs.readFileSync(path.join(process.cwd(), "..", relPath), "utf-8")) as T;
-}
-
 function gradeQuestion(
   qId:       string,
   entry:     AnswerEntry,
   title:     string,
-  submitted: string | string[] | Record<string, string> | undefined
+  submitted: string | string[] | Record<string, string> | undefined | null
 ): QuestionResult {
   const maxScore = entry.score;
 
@@ -47,7 +41,7 @@ function gradeQuestion(
     case "exact_match": {
       if (entry.type === "number_input") {
         const n = parseInt(String(submitted).replace(/\s/g, ""), 10);
-        earned = n === Number(entry.answer) ? maxScore : 0;
+        earned = !isNaN(n) && n === Number(entry.answer) ? maxScore : 0;
       } else {
         earned = String(submitted) === String(entry.answer) ? maxScore : 0;
       }
@@ -55,29 +49,45 @@ function gradeQuestion(
     }
 
     case "partial_with_penalty": {
+      if (!Array.isArray(submitted)) {
+        earned = 0;
+        break;
+      }
       const correctArr = entry.answer as string[];
       const correctSet = new Set(correctArr);
-      const subArr     = submitted  as string[];
-      const subSet     = new Set(subArr);
+      const subArr     = submitted as string[];
       const perRight   = entry.score_per_correct ?? 1;
       const perWrong   = entry.penalty_per_wrong  ?? 1;
       const minScore   = entry.min_score ?? 0;
 
-      if (correctArr.length === subArr.length && correctArr.every(a => subSet.has(a))) {
-        earned = maxScore;
-        break;
+      if (correctArr.length === subArr.length && correctArr.every(a => correctSet.has(a) && subArr.includes(a))) {
+        const subSet = new Set(subArr);
+        if (correctArr.every(a => subSet.has(a))) {
+          earned = maxScore;
+          break;
+        }
       }
 
       let raw = 0;
+      const subSet2 = new Set(subArr);
       for (const sel of subArr) {
         if (correctSet.has(sel)) raw += perRight;
         else                     raw -= perWrong;
       }
-      earned = Math.max(minScore, Math.min(raw, maxScore - 1));
+      // Full-correct shortcut
+      if (subSet2.size === correctSet.size && correctArr.every(a => subSet2.has(a))) {
+        earned = maxScore;
+      } else {
+        earned = Math.max(minScore, Math.min(raw, maxScore - 1));
+      }
       break;
     }
 
     case "partial_per_pair": {
+      if (typeof submitted !== "object" || Array.isArray(submitted) || submitted === null) {
+        earned = 0;
+        break;
+      }
       const correctMap = entry.answer as Record<string, string>;
       const subMap     = submitted   as Record<string, string>;
       const perPair    = entry.score_per_pair ?? 1;
@@ -100,22 +110,38 @@ function gradeQuestion(
   };
 }
 
+/** Strip undefined values so Firestore doesn't reject the document. */
+function sanitize<T extends object>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj)) as T;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as GradeRequest;
-    const { participantId, name, department, code, answers } = body;
+    let body: GradeRequest;
+    try {
+      body = (await req.json()) as GradeRequest;
+    } catch {
+      return NextResponse.json({ error: "요청 본문이 올바른 JSON이 아닙니다." }, { status: 400 });
+    }
 
-    const answerKey     = loadJson<AnswerKey>("web_data/answer_key.json");
-    const questionsData = loadJson<QData>("web_data/questions.json");
+    const { participantId, name, department, code, answers } = body ?? {};
+
+    const answerKey     = answerKeyData as { answers: Record<string, AnswerEntry> };
+    const qData         = questionsData as { challenge: { total_score: number }; questions: { id: string; title: string }[] };
+
+    const safeAnswers = answers && typeof answers === "object" && !Array.isArray(answers)
+      ? answers
+      : {};
 
     const results: QuestionResult[] = [];
     let totalScore = 0;
     let maxTotal   = 0;
 
-    for (const q of questionsData.questions) {
+    for (const q of qData.questions) {
       const entry = answerKey.answers[q.id];
       if (!entry) continue;
-      const r = gradeQuestion(q.id, entry, q.title, answers?.[q.id]);
+      const submitted = safeAnswers[q.id] ?? undefined;
+      const r = gradeQuestion(q.id, entry, q.title, submitted);
       results.push(r);
       totalScore += r.score;
       maxTotal   += r.maxScore;
@@ -129,28 +155,27 @@ export async function POST(req: NextRequest) {
       try {
         const db = getAdminDb();
 
-        // Read participant to get sessionId (set during /api/enter)
         let sessionId: string | null = null;
         try {
           const partDoc = await db.collection("participants").doc(participantId).get();
           sessionId = (partDoc.data()?.sessionId as string) ?? null;
         } catch {
-          // sessionId stays null — submission still saved without it
+          // sessionId stays null
         }
 
-        await db.collection("submissions").add({
+        await db.collection("submissions").add(sanitize({
           participantId,
-          code,
+          code:            code ?? null,
           sessionId,
-          name,
-          department,
-          answers,
+          name:            name ?? null,
+          department:      department ?? null,
+          answers:         safeAnswers,
           totalScore,
           maxScore:        maxTotal,
           percentage,
           questionResults: results,
           submittedAt:     FieldValue.serverTimestamp(),
-        });
+        }));
 
         await db.collection("participants").doc(participantId).update({
           finalScore:      totalScore,
@@ -158,17 +183,17 @@ export async function POST(req: NextRequest) {
           status:          "submitted",
         });
       } catch (fsErr) {
-        console.warn("[/api/grade] Firestore save failed:", fsErr);
+        console.error("[/api/grade] Firestore save failed:", fsErr instanceof Error ? fsErr.message : fsErr);
       }
     }
 
-    console.log(JSON.stringify({ name, totalScore, maxTotal, percentage }, null, 2));
+    console.log("[/api/grade] graded", JSON.stringify({ name, totalScore, maxTotal, percentage }));
 
     const response: GradeResponse = { totalScore, maxScore: maxTotal, percentage, results, submittedAt };
     return NextResponse.json(response);
 
   } catch (err) {
-    console.error("[/api/grade]", err);
+    console.error("[/api/grade] unexpected error:", err instanceof Error ? err.message : err);
     return NextResponse.json({ error: "채점 중 오류가 발생했습니다." }, { status: 500 });
   }
 }
