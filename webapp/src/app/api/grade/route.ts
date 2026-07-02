@@ -21,6 +21,7 @@ interface AnswerEntry {
   min_score?:         number;
   score_per_pair?:    number;
   tolerance?:         number;
+  score_scale?:       number[];
 }
 
 function gradeQuestion(
@@ -80,6 +81,29 @@ function gradeQuestion(
       } else {
         earned = Math.max(minScore, Math.min(raw, maxScore - 1));
       }
+      break;
+    }
+
+    // 선택한 항목 중 정답과 일치하는 개수에 따라 정해진 점수를 부여한다.
+    // 선택 개수는 UI에서 이미 최대 (score_scale.length - 1)개로 제한되지만,
+    // 서버에 그 이상이 들어와도 500 없이 0점으로 안전하게 처리한다.
+    case "match_count_scale": {
+      if (!Array.isArray(submitted)) {
+        earned = 0;
+        break;
+      }
+      const correctSet     = new Set(entry.answer as string[]);
+      const scale          = entry.score_scale ?? [];
+      const maxSelectable  = Math.max(scale.length - 1, 0);
+      const uniqueSelected = Array.from(new Set(submitted as string[]));
+
+      if (uniqueSelected.length === 0 || uniqueSelected.length > maxSelectable) {
+        earned = 0;
+        break;
+      }
+
+      const matchCount = uniqueSelected.filter(sel => correctSet.has(sel)).length;
+      earned = scale[matchCount] ?? 0;
       break;
     }
 

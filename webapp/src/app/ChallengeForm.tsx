@@ -207,7 +207,7 @@ function QuestionCard({
       {q.type === "multiple_choice" && (
         <div className="options">
           <p style={{ fontSize: "12px", color: "#94A3B8", marginBottom: "10px", fontWeight: 500 }}>
-            {q.select_count}개 선택
+            최대 {q.select_count}개까지 선택할 수 있습니다.
           </p>
           {q.options?.map(opt => {
             const sel = (answer as string[]) ?? [];
@@ -229,7 +229,7 @@ function QuestionCard({
       {q.type === "file_selection" && (
         <div className="options">
           <p style={{ fontSize: "12px", color: "#94A3B8", marginBottom: "10px", fontWeight: 500 }}>
-            {q.select_count}개 선택
+            최대 {q.select_count}개까지 선택할 수 있습니다.
           </p>
           {q.options?.map(opt => {
             const sel = (answer as string[]) ?? [];
