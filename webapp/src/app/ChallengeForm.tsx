@@ -40,11 +40,11 @@ function ConfirmModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel
 function ResultView({
   result,
   participant,
-  onRetry,
+  onExit,
 }: {
   result: GradeResponse;
   participant: Participant;
-  onRetry: () => void;
+  onExit: () => void;
 }) {
   const pct        = result.percentage;
   const grade      = pct >= 90 ? "우수" : pct >= 70 ? "양호" : pct >= 50 ? "보통" : "미흡";
@@ -56,6 +56,9 @@ function ResultView({
       minHeight: "100vh",
       background: "radial-gradient(ellipse at 60% -10%, #E0E7FF 0%, #F5F7FA 50%, #EFF6FF 100%)",
     }}>
+      <div className="top-bar">
+        <button className="btn-ghost logout-button" onClick={onExit}>로그아웃</button>
+      </div>
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "40px 24px 80px" }}>
 
         {/* Score card */}
@@ -149,8 +152,8 @@ function ResultView({
         </div>
 
         <div style={{ textAlign: "center" }}>
-          <button className="button-secondary" onClick={onRetry} style={{ minHeight: "44px" }}>
-            다시 시도하기
+          <button className="button-secondary" onClick={onExit} style={{ minHeight: "44px" }}>
+            처음 화면으로 돌아가기
           </button>
         </div>
       </div>
@@ -311,16 +314,22 @@ function ScoreRow({ label, score, bold }: { label: string; score: string; bold?:
 export default function ChallengeForm({
   data,
   participant,
+  initialResult,
+  onSubmitted,
+  onExit,
 }: {
   data: QuestionsData;
   participant: Participant;
+  initialResult?: GradeResponse | null;
+  onSubmitted: (result: GradeResponse) => void;
+  onExit: () => void;
 }) {
   const { questions } = data;
 
   const [answers,     setAnswers]     = useState<Answers>({});
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading,     setLoading]     = useState(false);
-  const [result,      setResult]      = useState<GradeResponse | null>(null);
+  const [result,      setResult]      = useState<GradeResponse | null>(initialResult ?? null);
   const [error,       setError]       = useState<string | null>(null);
 
   // ── Answer helpers ──────────────────────────────────────────────────────────
@@ -371,7 +380,9 @@ export default function ChallengeForm({
         setError(msg ?? "채점 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         return;
       }
-      setResult(payload as GradeResponse);
+      const gradeResult = payload as GradeResponse;
+      setResult(gradeResult);
+      onSubmitted(gradeResult);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
@@ -386,7 +397,7 @@ export default function ChallengeForm({
       <ResultView
         result={result}
         participant={participant}
-        onRetry={() => { setResult(null); setAnswers({}); }}
+        onExit={onExit}
       />
     );
   }
@@ -397,6 +408,17 @@ export default function ChallengeForm({
       {showConfirm && (
         <ConfirmModal onConfirm={confirmSubmit} onCancel={() => setShowConfirm(false)} />
       )}
+
+      <div className="top-bar">
+        <button
+          className="btn-ghost logout-button"
+          onClick={() => {
+            if (window.confirm("로그아웃하시겠습니까? 작성 중인 답안은 저장되지 않습니다.")) onExit();
+          }}
+        >
+          로그아웃
+        </button>
+      </div>
 
       <div className="container">
 

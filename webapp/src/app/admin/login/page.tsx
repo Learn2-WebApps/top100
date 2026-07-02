@@ -127,7 +127,7 @@ export default function AdminLoginPage() {
             </label>
             <input
               type="password"
-              placeholder="••••••••"
+              placeholder="비밀번호를 입력하세요"
               value={password}
               onChange={e => setPassword(e.target.value)}
               autoComplete="current-password"
@@ -156,7 +156,7 @@ export default function AdminLoginPage() {
             disabled={busy}
             style={{ width: "100%", minHeight: "54px", marginTop: "4px", fontSize: "16px", borderRadius: "13px" }}
           >
-            {busy ? "확인 중…" : "로그인"}
+            {busy ? "확인 중…" : "결과 확인"}
           </button>
         </form>
       </div>

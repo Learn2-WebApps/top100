@@ -2,10 +2,21 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import type { QuestionsData, Participant } from "@/types";
+import type { QuestionsData, Participant, GradeResponse } from "@/types";
 import ChallengeForm from "./ChallengeForm";
 
 const STORAGE_KEY = "wdc_participant";
+const RESULT_KEY  = "wdc_result";
+
+/** Clears all local session state and hard-navigates to the initial login screen. */
+export function resetSession() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(RESULT_KEY);
+    sessionStorage.clear();
+  } catch {}
+  window.location.href = "/";
+}
 
 const BG = "radial-gradient(ellipse at 60% -10%, #E0E7FF 0%, #F5F7FA 50%, #EFF6FF 100%)";
 
@@ -91,7 +102,7 @@ function LandingView({ onStart }: { onStart: () => void }) {
             transition: "color 0.15s",
           }}
         >
-          관리자 모드
+          관리자 로그인
         </Link>
       </div>
     </div>
@@ -244,14 +255,17 @@ function EntryView({
 // ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function ChallengeApp({ data }: { data: QuestionsData }) {
-  const [participant, setParticipant] = useState<Participant | null>(null);
-  const [showEntry,   setShowEntry]   = useState(false);
-  const [mounted,     setMounted]     = useState(false);
+  const [participant,   setParticipant]   = useState<Participant | null>(null);
+  const [initialResult, setInitialResult] = useState<GradeResponse | null>(null);
+  const [showEntry,     setShowEntry]     = useState(false);
+  const [mounted,       setMounted]       = useState(false);
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setParticipant(JSON.parse(stored) as Participant);
+      const storedParticipant = localStorage.getItem(STORAGE_KEY);
+      if (storedParticipant) setParticipant(JSON.parse(storedParticipant) as Participant);
+      const storedResult = localStorage.getItem(RESULT_KEY);
+      if (storedResult) setInitialResult(JSON.parse(storedResult) as GradeResponse);
     } catch {}
     setMounted(true);
   }, []);
@@ -262,9 +276,25 @@ export default function ChallengeApp({ data }: { data: QuestionsData }) {
     setShowEntry(false);
   }
 
+  function handleSubmitted(r: GradeResponse) {
+    try { localStorage.setItem(RESULT_KEY, JSON.stringify(r)); } catch {}
+    setInitialResult(r);
+  }
+
   if (!mounted) return null;
 
-  if (participant) return <ChallengeForm data={data} participant={participant} />;
-  if (showEntry)  return <EntryView onBack={() => setShowEntry(false)} onEntered={handleEntered} />;
+  // 이미 제출을 마친 세션이 새로고침 등으로 다시 접근하면 결과 화면을 그대로 보여준다.
+  if (participant) {
+    return (
+      <ChallengeForm
+        data={data}
+        participant={participant}
+        initialResult={initialResult}
+        onSubmitted={handleSubmitted}
+        onExit={resetSession}
+      />
+    );
+  }
+  if (showEntry) return <EntryView onBack={() => setShowEntry(false)} onEntered={handleEntered} />;
   return <LandingView onStart={() => setShowEntry(true)} />;
 }
