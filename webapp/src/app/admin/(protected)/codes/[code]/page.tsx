@@ -33,12 +33,12 @@ interface AccessCodeDoc {
 type SortKey = "totalScore" | "submittedAt" | "name";
 type SortDir = "asc" | "desc";
 
-const Q_IDS = ["Q1", "Q2", "Q3", "Q4", "Q5"];
+const Q_IDS = ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"];
 
 // ── CSV helper ────────────────────────────────────────────────────────────────
 
 function downloadCSV(rows: Submission[], code: string) {
-  const headers = ["이름", "소속부서", "총점", "Q1", "Q2", "Q3", "Q4", "Q5", "정답률(%)", "제출시각"];
+  const headers = ["이름", "소속부서", "총점", ...Q_IDS, "정답률(%)", "제출시각"];
 
   function cell(v: string | number) {
     const s = String(v);

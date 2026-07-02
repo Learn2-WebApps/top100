@@ -180,7 +180,7 @@ function QuestionCard({
     <div className="question-card">
       <div className="question-header">
         <span className="question-num">문항 {q.order}</span>
-        <span className="question-score">20점</span>
+        <span className="question-score">{q.score}점</span>
       </div>
       <div className="question-title">{q.title}</div>
       <div className="question-text">{q.question}</div>
@@ -458,17 +458,17 @@ export default function ChallengeForm({
           </div>
         </section>
 
-        {/* Scoring & Event Date */}
+        {/* Scoring */}
         <section className="section">
           <h2 className="section-title">📊 문제 구성 및 배점</h2>
           <p style={{ fontSize: "14px", color: "#64748B", marginBottom: "16px", lineHeight: 1.7 }}>
-            총 5개의 문제가 제공됩니다. 각 문제는 20점이며, 총점은 100점입니다.
+            총 {questions.length}개의 문제가 제공되며, 총점은 {data.challenge.total_score}점입니다.
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "20px" }}>
-            {["문제 1", "문제 2", "문제 3", "문제 4", "문제 5"].map(label => (
-              <ScoreRow key={label} label={label} score="20점" />
+            {questions.map(q => (
+              <ScoreRow key={q.id} label={`문제 ${q.order}`} score={`${q.score}점`} />
             ))}
-            <ScoreRow label="총점" score="100점" bold />
+            <ScoreRow label="총점" score={`${data.challenge.total_score}점`} bold />
           </div>
           <div style={{
             display: "flex", alignItems: "center", gap: "10px",
@@ -477,8 +477,9 @@ export default function ChallengeForm({
             border: "1px solid rgba(37,99,235,0.15)",
             borderRadius: "10px",
           }}>
-            <span style={{ fontSize: "13px", color: "#2563EB", fontWeight: 600 }}>웰컴데이 행사일</span>
-            <span style={{ fontSize: "14px", fontWeight: 700, color: "#0F172A" }}>2026년 7월 31일</span>
+            <span style={{ fontSize: "13px", color: "#2563EB", fontWeight: 600 }}>
+              흩어진 업무 자료를 바탕으로 최종 운영 정보를 파악하세요.
+            </span>
           </div>
         </section>
 
